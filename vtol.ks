@@ -1,14 +1,14 @@
 // made by leviathan01 (levi)
 // 9/10/2016
 // auto balance vtol script
-// version 1.0 
+// version 1.0
 // KOS version 1.0.0
 // KSP version 1.1.3.1289
 
 clearscreen.
 parameter maxTick is 2000, maxIPU is 2000.
 
-set maxcost to .05.
+set maxError to .05.
 
 set oldIPU to config:ipu.
 print("boosting IPU to " + maxIPU).
@@ -28,12 +28,12 @@ function get_CoT {
 		set relitive to pos - V(0, 0, 0).
 		set CoT to CoT + relitive * (vtol:availablethrust / SHIP:availablethrust).
 	}
-	
+
 	return CoT.
 }
 
-lock cost to vang(-1*vxcl(V(0, 0, 0), get_CoT()), up:forevector).
-set lastCost to 1000.
+lock error to vang(-1*vxcl(V(0, 0, 0), get_CoT()), up:forevector).
+set lastError to 1000.
 
 set down to (UP + R(180, 0, 0)):forevector.
 set down:mag to 10.
@@ -54,13 +54,15 @@ set tick to 0.
 
 function raiseTL {
 	parameter engine.
-	
+
 	set oldLimit to engine:thrustlimit.
-	set lastCost to cost.
+	set lastError to error.
 	set engine:thrustlimit to min(oldLimit + (.01), 100).
-	print cost at(0, 1).
+
+	set errorTemp to error.
+	print errorTemp at(0, 1).
 	set vd:start to get_CoT().
-	if lastCost > cost {
+	if lastError > errorTemp {
 		return true.
 	} else {
 		set engine:thrustlimit to oldLimit.
@@ -70,13 +72,15 @@ function raiseTL {
 
 function lowerTL {
 	parameter engine.
-	
+
 	set oldLimit to engine:thrustlimit.
-	set lastCost to cost.
+	set lastError to error.
 	set engine:thrustlimit to max(oldLimit - (.01), 0).
-	print cost at(0, 1).
+
+	set errorTemp to error.
+	print errorTemp at(0, 1).
 	set vd:start to get_CoT().
-	if lastCost > cost {
+	if lastError > errorTemp {
 		return true.
 	} else {
 		set engine:thrustlimit to oldLimit.
@@ -85,8 +89,8 @@ function lowerTL {
 }
 
 until not loop {
-	
-	if cost < maxcost {
+
+	if error < maxError {
 		print("CoT aligned with CoM").
 		clearvecdraws().
 		set loop to false.
